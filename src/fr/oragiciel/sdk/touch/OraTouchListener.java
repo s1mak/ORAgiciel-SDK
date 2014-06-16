@@ -1,4 +1,4 @@
-package fr.orasgiciel.sdk.touch;
+package fr.oragiciel.sdk.touch;
 
 
 public interface OraTouchListener {

@@ -1,4 +1,4 @@
-package fr.orasgiciel.sdk.activity;
+package fr.oragiciel.sdk.activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -18,8 +18,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import fr.orasgiciel.sdk.touch.OraTouchDetector;
-import fr.orasgiciel.sdk.touch.OraTouchListener;
+import fr.oragiciel.sdk.touch.OraTouchDetector;
+import fr.oragiciel.sdk.touch.OraTouchListener;
 
 public class OraActivity extends Activity {
 

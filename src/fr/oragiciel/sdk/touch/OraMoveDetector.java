@@ -1,4 +1,4 @@
-package fr.orasgiciel.sdk.touch;
+package fr.oragiciel.sdk.touch;
 
 import android.view.GestureDetector;
 import android.view.MotionEvent;

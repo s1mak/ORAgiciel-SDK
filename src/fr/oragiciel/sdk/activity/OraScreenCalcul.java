@@ -1,4 +1,4 @@
-package fr.orasgiciel.sdk.activity;
+package fr.oragiciel.sdk.activity;
 
 import android.graphics.Point;
 import android.graphics.Rect;

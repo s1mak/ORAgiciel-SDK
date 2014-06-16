@@ -1,4 +1,4 @@
-package fr.orasgiciel.sdk.touch;
+package fr.oragiciel.sdk.touch;
 
 import android.app.Activity;
 import android.graphics.Rect;
