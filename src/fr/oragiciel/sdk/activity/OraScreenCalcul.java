@@ -6,6 +6,8 @@ import android.util.DisplayMetrics;
 
 public class OraScreenCalcul {
 
+	private static final float ORA_DPI = 213.0f;
+	
 	private DisplayMetrics displayMetrics;
 	private Point realSize;
 
@@ -15,11 +17,16 @@ public class OraScreenCalcul {
 	private Rect touchRect;
 	private int simulatorWidth;
 	private int simulatorPadding;
+	
+	private int oraScreenWidth;
+	private int oraScreenHeight;
+	private float ratioDpi;
 
 	public void setScreenMetrics(DisplayMetrics displayMetrics, Point realSize) {
 		this.displayMetrics = displayMetrics;
 		this.realSize = realSize;
 
+		ratioDpi = displayMetrics.densityDpi / ORA_DPI;
 		checkScreen();
 	}
 
@@ -50,6 +57,9 @@ public class OraScreenCalcul {
             touchRect = new Rect(640, 0, 640 + touchWidth, 0 + touchHeight);
             simulatorPadding = 0;
             worldScaleMax = 1;
+
+            oraScreenWidth = 640;
+            oraScreenHeight = 480; 
         } else {
 
             int simulatorRatio = (int) Math.ceil(1 / (width - 640.0) / 496.0);
@@ -63,9 +73,28 @@ public class OraScreenCalcul {
                     / simulatorRatio, touchTop + 640 / simulatorRatio);
 
             double tmpScaleMax = Math.min(worldWidth / 640.0, height / 480.0);
-            worldScaleMax = (float) (Math.floor(tmpScaleMax * 10) / 10.0);
+            worldScaleMax = (float) (Math.floor(tmpScaleMax * 10) / 10.0);   
+
+
+            oraScreenWidth = (int) Math.round(640 * ratioDpi);
+//            if (oraScreenWidth > worldWidth) {
+//            	ratioDpi = worldWidth / 640;
+//                oraScreenWidth = (int) Math.round(640 * ratioDpi);
+//            } 
+            
+            oraScreenHeight = (int) Math.round(480 * ratioDpi);           
+            
         }
     }
+	
+	/**
+	 * Retourne le scale réel en fonction des DPI par rapport au scale désiré qui va de 1 à worldScaleMax.
+	 * @param scale : scale désiré
+	 * @return scale réel
+	 */
+	public float getRealScale(float scale) {
+		return scale / ratioDpi;
+	}
 
     public int getWorldWidth() {
         return worldWidth;
@@ -91,4 +120,22 @@ public class OraScreenCalcul {
         return simulatorPadding;
     }
 
+	public DisplayMetrics getDisplayMetrics() {
+		return displayMetrics;
+	}
+
+	public Point getRealSize() {
+		return realSize;
+	}
+
+	public int getOraScreenWidth() {
+		return oraScreenWidth;
+	}
+
+	public int getOraScreenHeight() {
+		return oraScreenHeight;
+	}
+
+	
+	
 }
