@@ -62,7 +62,7 @@ public class OraActivity extends Activity {
 
 		checkScreenSize();
 
-		oraTouchDetector.setCaputeZone(oraScreenCalcul.getTouchRect());
+		oraTouchDetector.setCaptureZone(oraScreenCalcul.getTouchRect());
 		oraTouchDetector.setSimulator(oraScreenCalcul.isTouchSimulator());
 
 		if (oraScreenCalcul.isTouchSimulator()) {

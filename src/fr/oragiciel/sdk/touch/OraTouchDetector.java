@@ -10,7 +10,7 @@ public class OraTouchDetector {
 	private GestureDetector gestureDetector;
     private OraMoveDetector oraMoveDetector;
     private OraTouchListener oraListener;
-	private Rect caputeZone;
+	private Rect captureZone;
 
     public void addGlassListener(OraTouchListener glassListener) {
         this.oraListener = glassListener;
@@ -24,7 +24,7 @@ public class OraTouchDetector {
 
     public void onTouchEvent(MotionEvent event) {
 		if (oraListener != null
-                && caputeZone.contains((int) event.getX(), (int) event.getY())) {
+                && captureZone.contains((int) event.getX(), (int) event.getY())) {
 			gestureDetector.onTouchEvent(event);
 
 			if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -41,8 +41,8 @@ public class OraTouchDetector {
 		}
     }
 
-    public void setCaputeZone(Rect caputeZone) {
-		this.caputeZone = caputeZone;
+    public void setCaptureZone(Rect captureZone) {
+		this.captureZone = captureZone;
     }
 
     public void setSimulator(boolean simulator) {
