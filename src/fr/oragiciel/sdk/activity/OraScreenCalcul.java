@@ -34,9 +34,12 @@ public class OraScreenCalcul {
 		int screenHeight = realSize.y;
 		int screenWidth = realSize.x;
 
-		if (screenHeight < 480 || screenWidth < 640) {
+		if (screenHeight < 440 || screenWidth < 640) {
 			throw new RuntimeException(
 					"Screen Resolution Invalid ! Minimum 640x480");
+		} else if (screenHeight < 480 && screenWidth == 640) {
+			touchSimulator = false;
+			touchRect = new Rect(0, 0, 640, screenHeight);
 		} else if (screenHeight == 480 && screenWidth == 640) {
 			touchSimulator = false;
 			touchRect = new Rect(0, 0, 640, 480);

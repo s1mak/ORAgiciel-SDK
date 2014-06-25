@@ -31,6 +31,7 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Switch;
 import android.widget.TextView;
+import fr.oragiciel.sdk.camera.CameraManager;
 import fr.oragiciel.sdk.color.ColorDialog;
 import fr.oragiciel.sdk.color.ColorDialogListener;
 import fr.oragiciel.sdk.touch.OraTouchDetector;
@@ -49,7 +50,7 @@ public class OraActivity extends Activity {
 	private OraScreenCalcul oraScreenCalcul;
 	private SurfaceView worldCamera;
 
-	private Camera camera;
+	private CameraManager cameraManager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -57,12 +58,13 @@ public class OraActivity extends Activity {
 
 		oraTouchDetector = new OraTouchDetector(this);
 		oraScreenCalcul = new OraScreenCalcul();
+		cameraManager = new CameraManager(this);
 
 		setActivitySetting();
 
 		checkScreenSize();
 
-		oraTouchDetector.setCaputeZone(oraScreenCalcul.getTouchRect());
+		oraTouchDetector.setCaptureZone(oraScreenCalcul.getTouchRect());
 		oraTouchDetector.setSimulator(oraScreenCalcul.isTouchSimulator());
 
 		if (oraScreenCalcul.isTouchSimulator()) {
@@ -72,32 +74,24 @@ public class OraActivity extends Activity {
 		}
 
 	}
-private class MyRelativeLayout extends RelativeLayout {
 
-	public MyRelativeLayout(Context context) {
-		super(context);
-	}
-	@Override
-	public boolean dispatchTouchEvent(MotionEvent ev) {
-		// TODO Auto-generated method stub
-		return true;
-	}
-	 @Override
-	public boolean onTouchEvent(MotionEvent event) {
-		// TODO Auto-generated method stub
-		return true;
-	}
-	@Override
-	public boolean onInterceptTouchEvent(MotionEvent ev) {
-		return true;
-	}
-}
 	private void createOra() {
+		worldLayout = new RelativeLayout(this);
+		LayoutParams worldParams = new LinearLayout.LayoutParams(
+				LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+		super.setContentView(worldLayout, worldParams);
+
+		LayoutParams surfaceParams = new LinearLayout.LayoutParams(
+				200, 100);
+		worldCamera = new SurfaceView(this);
+		worldLayout.addView(worldCamera, surfaceParams);
+		cameraManager.setSurfaceView(worldCamera);
+		
 		oraLayout = new RelativeLayout(this);
 		oraLayout.setBackgroundColor(Color.BLACK);
 		RelativeLayout.LayoutParams oraLayoutparams = new RelativeLayout.LayoutParams(
 				LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-		super.setContentView(oraLayout, oraLayoutparams);
+		worldLayout.addView(oraLayout, oraLayoutparams);
 
 	}
 
@@ -110,14 +104,14 @@ private class MyRelativeLayout extends RelativeLayout {
 		super.setContentView(rootLayout, rootLayoutParams);
 
 		worldLayout = new RelativeLayout(this);
-//		worldLayout.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
-//		worldLayout.setVerticalGravity(Gravity.CENTER_VERTICAL);
+		// worldLayout.setHorizontalGravity(Gravity.CENTER_HORIZONTAL);
+		// worldLayout.setVerticalGravity(Gravity.CENTER_VERTICAL);
 		LayoutParams worldParams = new LinearLayout.LayoutParams(
 				oraScreenCalcul.getWorldWidth(), LayoutParams.MATCH_PARENT);
 		rootLayout.addView(worldLayout, worldParams);
 
 		worldCamera = new SurfaceView(this);
-		 worldCamera.setBackgroundColor(worldBackGroudColor);
+		worldCamera.setBackgroundColor(worldBackGroudColor);
 		worldLayout.addView(worldCamera, rootLayoutParams);
 
 		RelativeLayout worldUpperLayout = new RelativeLayout(this);
@@ -129,7 +123,8 @@ private class MyRelativeLayout extends RelativeLayout {
 		oraLayout = new MyRelativeLayout(this);
 		oraLayout.setBackgroundColor(Color.TRANSPARENT);
 		RelativeLayout.LayoutParams oraLayoutparams = new RelativeLayout.LayoutParams(
-				oraScreenCalcul.getOraScreenWidth(), oraScreenCalcul.getOraScreenHeight());
+				oraScreenCalcul.getOraScreenWidth(),
+				oraScreenCalcul.getOraScreenHeight());
 		worldUpperLayout.addView(oraLayout, oraLayoutparams);
 		createPanelSimulator();
 	}
@@ -184,16 +179,16 @@ private class MyRelativeLayout extends RelativeLayout {
 		Button bgButton = createBGButton();
 		panelBackground.addView(bgButton);
 
-//		LinearLayout panelBackgroundCamera = new LinearLayout(this);
-//		panelBackgroundCamera.setOrientation(LinearLayout.VERTICAL);
-//		TextView textCamera = new TextView(this);
-//		textCamera.setGravity(Gravity.CENTER_HORIZONTAL);
-//		textCamera.setText("Camera");
-//		textCamera.setTextSize(14f);
-//		Button cameraButton = createCamera();
-//		panelBackgroundCamera.addView(textCamera);
-//		panelBackgroundCamera.addView(cameraButton);
-//		panelBackground.addView(panelBackgroundCamera);
+		LinearLayout panelBackgroundCamera = new LinearLayout(this);
+		panelBackgroundCamera.setOrientation(LinearLayout.VERTICAL);
+		TextView textCamera = new TextView(this);
+		textCamera.setGravity(Gravity.CENTER_HORIZONTAL);
+		textCamera.setText("Camera");
+		textCamera.setTextSize(14f);
+		Button cameraButton = createCamera();
+		panelBackgroundCamera.addView(textCamera);
+		panelBackgroundCamera.addView(cameraButton);
+		panelBackground.addView(panelBackgroundCamera);
 
 		panelControl.addView(panelBackground);
 
@@ -222,59 +217,15 @@ private class MyRelativeLayout extends RelativeLayout {
 			public void onCheckedChanged(CompoundButton buttonView,
 					boolean isChecked) {
 				if (isChecked) {
-					SurfaceHolder surfaceHolder = worldCamera.getHolder();
-					// surfaceHolder.addCallback(new CameraCallBack());
 					worldCamera.setBackgroundResource(0);
-					camera = Camera.open();
-					if (previewing) {
-						camera.stopPreview();
-						previewing = false;
-					}
-
-					if (camera != null) {
-						try {
-							camera.setDisplayOrientation(getOrientationDegree());
-							camera.setPreviewDisplay(surfaceHolder);
-							camera.startPreview();
-							previewing = true;
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
+					cameraManager.startCamera();
 				} else {
-					camera.stopPreview();
-					camera.release();
-					camera = null;
-					previewing = false;
+					cameraManager.stopCamera();
 					worldCamera.setBackgroundColor(worldBackGroudColor);
 				}
 
 			}
 
-			private int getOrientationDegree() {
-				int rotation = getWindowManager().getDefaultDisplay()
-						.getRotation();
-				int degrees = 0;
-				switch (rotation) {
-				case Surface.ROTATION_0:
-					degrees = 0;
-					break;
-				case Surface.ROTATION_90:
-					degrees = 90;
-					break;
-				case Surface.ROTATION_180:
-					degrees = 180;
-					break;
-				case Surface.ROTATION_270:
-					degrees = 270;
-					break;
-				}
-
-				int result;
-				result = (90-degrees + 360) % 360;
-
-				return result;
-			}
 		});
 
 		return switchButton;
@@ -335,6 +286,18 @@ private class MyRelativeLayout extends RelativeLayout {
 	}
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+		cameraManager.setSurfaceView(worldCamera);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		cameraManager.stopCamera();
+	}
+
+	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 
 		oraTouchDetector.onTouchEvent(event);
@@ -368,28 +331,42 @@ private class MyRelativeLayout extends RelativeLayout {
 		oraLayout.addView(view, params);
 	}
 
-	private class CameraCallBack implements SurfaceHolder.Callback {
-
-		private boolean previewing;
-
-		@Override
-		public void surfaceCreated(SurfaceHolder holder) {
-		}
-
-		@Override
-		public void surfaceChanged(SurfaceHolder holder, int format, int width,
-				int height) {
-
-		}
-
-		@Override
-		public void surfaceDestroyed(SurfaceHolder holder) {
-
-		}
-
-	}
-	
 	public Point getScreenSize() {
-		return new Point(oraScreenCalcul.getOraScreenWidth(), oraScreenCalcul.getOraScreenHeight());
+		return new Point(oraScreenCalcul.getOraScreenWidth(),
+				oraScreenCalcul.getOraScreenHeight());
+	}
+
+	public CameraManager getCameraManager() {
+		return cameraManager;
+	}
+
+	private class MyRelativeLayout extends RelativeLayout {
+
+		public MyRelativeLayout(Context context) {
+			super(context);
+		}
+
+		@Override
+		public boolean dispatchTouchEvent(MotionEvent ev) {
+			// TODO Auto-generated method stub
+			return true;
+		}
+
+		@Override
+		public boolean onTouchEvent(MotionEvent event) {
+			// TODO Auto-generated method stub
+			return true;
+		}
+
+		@Override
+		public boolean onInterceptTouchEvent(MotionEvent ev) {
+			return true;
+		}
+	}
+
+	public void resetBackground() {
+		if (oraScreenCalcul.isTouchSimulator()) {
+			worldCamera.setBackgroundResource(0);
+		}
 	}
 }
