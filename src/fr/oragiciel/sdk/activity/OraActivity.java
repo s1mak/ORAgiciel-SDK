@@ -1,21 +1,16 @@
 package fr.oragiciel.sdk.activity;
 
-import java.io.IOException;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.Point;
-import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.Surface;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -28,9 +23,10 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
+import android.widget.Space;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 import fr.oragiciel.sdk.camera.CameraManager;
 import fr.oragiciel.sdk.color.ColorDialog;
 import fr.oragiciel.sdk.color.ColorDialogListener;
@@ -51,6 +47,7 @@ public class OraActivity extends Activity {
 	private SurfaceView worldCamera;
 
 	private CameraManager cameraManager;
+	private ToggleButton cameraButton;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -81,12 +78,11 @@ public class OraActivity extends Activity {
 				LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 		super.setContentView(worldLayout, worldParams);
 
-		LayoutParams surfaceParams = new LinearLayout.LayoutParams(
-				200, 100);
+		LayoutParams surfaceParams = new LinearLayout.LayoutParams(200, 100);
 		worldCamera = new SurfaceView(this);
 		worldLayout.addView(worldCamera, surfaceParams);
-		cameraManager.setSurfaceView(worldCamera);
-		
+		cameraManager.setSdkSurfaceView(worldCamera);
+
 		oraLayout = new RelativeLayout(this);
 		oraLayout.setBackgroundColor(Color.BLACK);
 		RelativeLayout.LayoutParams oraLayoutparams = new RelativeLayout.LayoutParams(
@@ -179,16 +175,12 @@ public class OraActivity extends Activity {
 		Button bgButton = createBGButton();
 		panelBackground.addView(bgButton);
 
-		LinearLayout panelBackgroundCamera = new LinearLayout(this);
-		panelBackgroundCamera.setOrientation(LinearLayout.VERTICAL);
-		TextView textCamera = new TextView(this);
-		textCamera.setGravity(Gravity.CENTER_HORIZONTAL);
-		textCamera.setText("Camera");
-		textCamera.setTextSize(14f);
-		Button cameraButton = createCamera();
-		panelBackgroundCamera.addView(textCamera);
-		panelBackgroundCamera.addView(cameraButton);
-		panelBackground.addView(panelBackgroundCamera);
+		
+		cameraButton = createCamera();
+		panelBackground.addView(cameraButton,new LinearLayout.LayoutParams(
+				LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
+//		panelBackground.addView(panelBackgroundCamera, new LinearLayout.LayoutParams(
+//				LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT));
 
 		panelControl.addView(panelBackground);
 
@@ -202,14 +194,15 @@ public class OraActivity extends Activity {
 
 	}
 
-	private Button createCamera() {
-		// ToggleButton toggleButton = new ToggleButton(this);
-		Switch switchButton = new Switch(this);
-		switchButton.setPadding(1, 1, 1, 1);
-		switchButton.setTextOff("Off");
-		switchButton.setTextOn("On");
+	private ToggleButton createCamera() {
+		ToggleButton cameraButton = new ToggleButton(this);
+		// Switch switchButton = new Switch(this);
+		// cameraButton.setPadding(1, 1, 1, 1);
+		cameraButton.setText("Off");
+		cameraButton.setTextOff("Off");
+		cameraButton.setTextOn("On");
 
-		switchButton.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+		cameraButton.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
 			private boolean previewing;
 
@@ -228,7 +221,7 @@ public class OraActivity extends Activity {
 
 		});
 
-		return switchButton;
+		return cameraButton;
 	}
 
 	private Button createBGButton() {
@@ -288,7 +281,7 @@ public class OraActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
-		cameraManager.setSurfaceView(worldCamera);
+		cameraManager.setSdkSurfaceView(worldCamera);
 	}
 
 	@Override
@@ -364,9 +357,17 @@ public class OraActivity extends Activity {
 		}
 	}
 
-	public void resetBackground() {
+	public void cameraStarted() {
 		if (oraScreenCalcul.isTouchSimulator()) {
 			worldCamera.setBackgroundResource(0);
+			cameraButton.setChecked(true);			
+		}
+	}
+	
+	public void cameraStopped() {
+		if (oraScreenCalcul.isTouchSimulator()) {
+			worldCamera.setBackgroundColor(worldBackGroudColor);
+			cameraButton.setChecked(false);
 		}
 	}
 }

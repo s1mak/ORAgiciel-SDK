@@ -19,7 +19,8 @@ public class CameraManager {
 	private Camera camera;
 	private Camera.Parameters cameraParameters;
 	private CameraPreviewCallback cameraPreviewCallback;
-	private SurfaceView surfaceViewSdk;
+	private SurfaceView sdkSurfaceView;
+	private SurfaceView userSurfaceView;
 	private int camOrientation;
 
 	private List<FrameListener> fullFrameListeners;
@@ -39,12 +40,16 @@ public class CameraManager {
 					if (cameraParameters != null) {
 						camera.setParameters(cameraParameters);
 					}
-					oraActivity.resetBackground();
-					camera.setPreviewDisplay(surfaceViewSdk.getHolder());
+					if (userSurfaceView != null) {
+						camera.setPreviewDisplay(userSurfaceView.getHolder());
+					}else {
+						camera.setPreviewDisplay(sdkSurfaceView.getHolder());
+					}
 					camOrientation = getOrientationDegree();
 					camera.setDisplayOrientation(camOrientation);
 					camera.setPreviewCallback(cameraPreviewCallback);
 					camera.startPreview();
+					oraActivity.cameraStarted();
 				} else {
 					Toast.makeText(oraActivity,
 							"Immpossible d'utiliser la caméra",
@@ -74,11 +79,16 @@ public class CameraManager {
 			camera.setPreviewCallback(null);
 			camera.release();
 			camera = null;
+			oraActivity.cameraStopped();
 		}
 	}
 
-	public void setSurfaceView(SurfaceView surfaceViewSdk) {
-		this.surfaceViewSdk = surfaceViewSdk;
+	public void setSdkSurfaceView(SurfaceView sdkSurfaceView) {
+		this.sdkSurfaceView = sdkSurfaceView;
+	}
+
+	public void setUserSurfaceView(SurfaceView userSurfaceView) {
+		this.userSurfaceView = userSurfaceView;
 	}
 
 	public Camera.Parameters getCameraParameters() {
