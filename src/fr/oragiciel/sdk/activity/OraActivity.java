@@ -28,6 +28,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 import fr.oragiciel.sdk.camera.CameraManager;
+import fr.oragiciel.sdk.camera.SubDivisionProportion;
 import fr.oragiciel.sdk.color.ColorDialog;
 import fr.oragiciel.sdk.color.ColorDialogListener;
 import fr.oragiciel.sdk.touch.OraTouchDetector;
@@ -48,6 +49,7 @@ public class OraActivity extends Activity {
 
 	private CameraManager cameraManager;
 	private ToggleButton cameraButton;
+	protected SubDivisionProportion subDivisionProportion;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +84,8 @@ public class OraActivity extends Activity {
 		worldCamera = new SurfaceView(this);
 		worldLayout.addView(worldCamera, surfaceParams);
 		cameraManager.setSdkSurfaceView(worldCamera);
+		subDivisionProportion = new SubDivisionProportion(0.3f, 0.31f, 0.3f, 0.34f);
+		cameraManager.setSubDivisionProportion(subDivisionProportion);
 
 		oraLayout = new RelativeLayout(this);
 		oraLayout.setBackgroundColor(Color.BLACK);
@@ -212,6 +216,7 @@ public class OraActivity extends Activity {
 				if (isChecked) {
 					worldCamera.setBackgroundResource(0);
 					cameraManager.startCamera();
+					cameraManager.setSubDivisionProportion(subDivisionProportion);
 				} else {
 					cameraManager.stopCamera();
 					worldCamera.setBackgroundColor(worldBackGroudColor);
@@ -254,8 +259,11 @@ public class OraActivity extends Activity {
 
 			private void scale() {
 				float scale = (float) ((progress + 10.0) / 10.0);
-				oraLayout.setScaleX(oraScreenCalcul.getRealScale(scale));
-				oraLayout.setScaleY(oraScreenCalcul.getRealScale(scale));
+				float realScale = oraScreenCalcul.getRealScale(scale);
+				oraLayout.setScaleX(realScale);
+				oraLayout.setScaleY(realScale);
+				subDivisionProportion = new SubDivisionProportion((float) ((1-realScale)*0.5), (float) ((1-realScale)*0.5), realScale, realScale);
+				cameraManager.setSubDivisionProportion(subDivisionProportion);
 			}
 
 			@Override

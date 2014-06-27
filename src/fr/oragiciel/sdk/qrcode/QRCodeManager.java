@@ -36,7 +36,7 @@ public class QRCodeManager {
 
 	public QRCodeManager(CameraManager cameraManager) {
 		this.cameraManager = cameraManager;
-		cameraManager.addFullFrameListeners(new QRFrameListener());
+		cameraManager.addOraFrameListeners(new QRFrameListener());
 
 		multiFormatReader = new MultiFormatReader();
 		Map<DecodeHintType, Object> hints = new EnumMap<DecodeHintType, Object>(

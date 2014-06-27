@@ -4,14 +4,12 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import fr.oragiciel.sdk.activity.OraActivity;
-import android.app.Activity;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.Surface;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
+import fr.oragiciel.sdk.activity.OraActivity;
 
 public class CameraManager {
 
@@ -24,17 +22,24 @@ public class CameraManager {
 	private int camOrientation;
 
 	private List<FrameListener> fullFrameListeners;
+	private List<FrameListener> oraFrameListeners;
+	private SubDivisionProportion subDivisionProportion;
 
 	public CameraManager(OraActivity activity) {
 		this.oraActivity = activity;
 		fullFrameListeners = new LinkedList<FrameListener>();
+		oraFrameListeners = new LinkedList<FrameListener>();
 	}
 
 	public synchronized void startCamera() {
 		if (camera == null) {
 			try {
 				cameraPreviewCallback = new CameraPreviewCallback(
-						fullFrameListeners);
+						fullFrameListeners, oraFrameListeners);
+				if (subDivisionProportion != null) {
+					cameraPreviewCallback
+							.setSubDivisionProportion(subDivisionProportion);
+				}
 				openCamera();
 				if (camera != null) {
 					if (cameraParameters != null) {
@@ -42,7 +47,7 @@ public class CameraManager {
 					}
 					if (userSurfaceView != null) {
 						camera.setPreviewDisplay(userSurfaceView.getHolder());
-					}else {
+					} else {
 						camera.setPreviewDisplay(sdkSurfaceView.getHolder());
 					}
 					camOrientation = getOrientationDegree();
@@ -105,6 +110,19 @@ public class CameraManager {
 
 	public void addFullFrameListeners(FrameListener frameListener) {
 		fullFrameListeners.add(frameListener);
+	}
+
+	public void addOraFrameListeners(FrameListener frameListener) {
+		oraFrameListeners.add(frameListener);
+	}
+
+	public void setSubDivisionProportion(
+			SubDivisionProportion subDivisionProportion) {
+		this.subDivisionProportion = subDivisionProportion;
+		if (cameraPreviewCallback != null) {
+			cameraPreviewCallback
+					.setSubDivisionProportion(subDivisionProportion);
+		}
 	}
 
 	private int getOrientationDegree() {
