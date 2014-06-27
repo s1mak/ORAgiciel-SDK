@@ -4,6 +4,8 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 
+import android.app.Activity;
+import android.content.res.Resources.Theme;
 import android.hardware.Camera.Parameters;
 import android.hardware.Camera.Size;
 import android.util.Log;
@@ -26,6 +28,11 @@ public class QRCodeManager {
 	private MultiFormatReader multiFormatReader;
 	private QrCodeListener qrCodeListener;
 	private CameraManager cameraManager;
+	private Activity activity;
+
+	private RawResult rawResult;
+	private Boolean inProgress;
+	private DecodeThread decodeThread;
 
 	public QRCodeManager(CameraManager cameraManager) {
 		this.cameraManager = cameraManager;
@@ -39,6 +46,9 @@ public class QRCodeManager {
 				EnumSet.of(BarcodeFormat.QR_CODE));
 		hints.put(DecodeHintType.CHARACTER_SET, "utf-8");
 		multiFormatReader.setHints(hints);
+
+		inProgress = false;
+		decodeThread = new DecodeThread();
 	}
 
 	public void setQrCodeListener(QrCodeListener qrCodeListener) {
@@ -46,13 +56,15 @@ public class QRCodeManager {
 	}
 
 	public void scan() {
-//		Parameters cameraParameters = cameraManager.getCameraParameters();
-//		cameraParameters.setPreviewFpsRange(1000, 1000);
-//		cameraManager.setCameraParameters(cameraParameters);
+		// Parameters cameraParameters = cameraManager.getCameraParameters();
+		// cameraParameters.setPreviewFpsRange(1000, 1000);
+		// cameraManager.setCameraParameters(cameraParameters);
+		decodeThread.start();
 		cameraManager.startCamera();
 	}
 
 	public void stopScan() {
+		decodeThread.interrupt();
 		cameraManager.stopCamera();
 	}
 
@@ -60,6 +72,63 @@ public class QRCodeManager {
 
 		@Override
 		public void onFrame(byte[] data, Size size) {
+			synchronized (inProgress) {
+				if (!inProgress) {
+					rawResult = new RawResult();
+					rawResult.data = data;
+					rawResult.size = size;
+					inProgress = true;
+				}
+			}
+		}
+
+	}
+
+	private class RawResult {
+		private byte[] data;
+		private Size size;
+	}
+
+	private class DecodeThread extends Thread {
+
+		@Override
+		public void run() {
+			while (!isInterrupted()) {
+
+				try {
+					byte[] data = null;
+					Size size = null;
+					synchronized (inProgress) {
+						if (rawResult != null) {
+							data = rawResult.data;
+							size = rawResult.size;
+							inProgress = true;
+						}
+					}
+
+					if (data != null) {
+						final Result result = decode(data, size);
+
+						if (result != null) {
+							if (qrCodeListener != null) {
+								qrCodeListener.onQrCodeRead(result);
+							}
+						}
+
+						synchronized (inProgress) {
+							rawResult = null;
+							inProgress = false;
+						}
+					}
+
+					sleep(250);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+			}
+		}
+
+		private Result decode(byte[] data, Size size) {
 			Result rawResult = null;
 
 			long start = System.currentTimeMillis();
@@ -75,9 +144,7 @@ public class QRCodeManager {
 					if (cameraManager.camIsInverted()) {
 						rawResult = recalculateInvertedPoints(rawResult, size);
 					}
-					if (qrCodeListener != null) {
-						qrCodeListener.onQrCodeRead(rawResult);
-					}
+					return rawResult;
 				} catch (ReaderException re) {
 					// continue
 				} finally {
@@ -86,6 +153,7 @@ public class QRCodeManager {
 				long stop = System.currentTimeMillis();
 				Log.d("qrcode", start + " : " + (stop - start));
 			}
+			return null;
 		}
 
 		private Result recalculateInvertedPoints(Result rawResult, Size size) {
