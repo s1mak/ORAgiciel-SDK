@@ -378,4 +378,9 @@ public class OraActivity extends Activity {
 			cameraButton.setChecked(false);
 		}
 	}
+
+	public OraTouchDetector getOraTouchDetector() {
+		return oraTouchDetector;
+	}
+	
 }
